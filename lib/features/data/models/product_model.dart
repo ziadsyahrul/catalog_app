@@ -50,6 +50,7 @@ class ProductModel extends HiveObject {
   // Model → JSON (untuk POST ke API)
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'title': title,
       'price': price,
       'description': description,

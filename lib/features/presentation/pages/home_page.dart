@@ -33,56 +33,59 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      // BlocBuilder = collectAsState() di Android
-      body: BlocBuilder<ProductListBloc, ProductListState>(
-        builder: (context, state) {
-          if (state is ProductListLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
 
-          if (state is ProductListError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  ElevatedButton(
-                    onPressed: () => context.read<ProductListBloc>()
-                        .add(GetProductsEvent()),
-                    child: const Text('Coba Lagi'),
-                  ),
-                ],
-              ),
-            );
-          }
+      body: SafeArea(
+        child: BlocBuilder<ProductListBloc, ProductListState>(
+          builder: (context, state) {
+            if (state is ProductListLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (state is ProductListLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<ProductListBloc>().add(GetProductsEvent());
-              },
-              child: GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.7,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
+            if (state is ProductListError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(state.message),
+                    ElevatedButton(
+                      onPressed: () => context.read<ProductListBloc>().add(
+                        GetProductsEvent(),
+                      ),
+                      child: const Text('Coba Lagi'),
+                    ),
+                  ],
                 ),
-                itemCount: state.products.length,
-                itemBuilder: (context, index) {
-                  final product = state.products[index];
-                  return ProductCard(
-                    product: product,
-                    onTap: () => context.push('/detail/${product.id}'),
-                  );
-                },
-              ),
-            );
-          }
+              );
+            }
 
-          return const SizedBox();
-        },
+            if (state is ProductListLoaded) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context.read<ProductListBloc>().add(GetProductsEvent());
+                },
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.7,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: state.products.length,
+                  itemBuilder: (context, index) {
+                    final product = state.products[index];
+                    return ProductCard(
+                      product: product,
+                      onTap: () => context.push('/detail/${product.id}'),
+                    );
+                  },
+                ),
+              );
+            }
+
+            return const SizedBox();
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/add-product'),

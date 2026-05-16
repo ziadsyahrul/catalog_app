@@ -19,12 +19,29 @@ class ProductRepositoryImpl implements ProductRepository{
   @override
   Future<List<Product>> getProducts() async {
     try {
+      // fetch dari API
       final remoteProducts = await remoteDataSource.getProducts();
 
+      // ambil produk lokal yang id-nya tidak ada di API
+      // supaya produk tambahan (id 21 dst) tidak hilang!
+      final localProducts = await localDataSource.getCachedProducts();
+      final remoteIds = remoteProducts.map((p) => p.id).toSet();
+      final localOnlyProducts = localProducts
+          .where((p) => !remoteIds.contains(p.id))
+          .toList();
+
+      // cache produk dari API
       await localDataSource.cacheProducts(remoteProducts);
 
-      return remoteProducts.map((model) => model.toEntity()).toList();
+      // gabungkan API + lokal only
+      final allProducts = [
+        ...remoteProducts,
+        ...localOnlyProducts,
+      ];
+
+      return allProducts.map((model) => model.toEntity()).toList();
     } on ServerException {
+      // offline → ambil semua dari cache
       try {
         final localProducts = await localDataSource.getCachedProducts();
         return localProducts.map((model) => model.toEntity()).toList();
@@ -39,10 +56,8 @@ class ProductRepositoryImpl implements ProductRepository{
     try {
       final product = await remoteDataSource.getProductById(id);
 
-      // cek apakah produk ini ada di favoriteBox
       final isFavorite = await localDataSource.isFavorite(id);
 
-      // kembalikan entity dengan isFavorite yang benar
       return product.toEntity().copyWith(isFavorite: isFavorite);
     } on ServerException catch (e) {
       throw ServerFailure(e.message);
@@ -54,6 +69,8 @@ class ProductRepositoryImpl implements ProductRepository{
     try {
       final productModel = ProductModel.fromEntity(product);
       final result = await remoteDataSource.addProduct(productModel);
+
+      await localDataSource.cacheProducts([result]);
       return result.toEntity();
     } on ServerException catch (e) {
       throw ServerFailure(e.message);

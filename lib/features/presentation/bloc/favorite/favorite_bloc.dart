@@ -18,7 +18,7 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     emit(FavoriteLoading());
     try {
       await emit.forEach(
-        getFavoriteProducts(), // ini sekarang Stream!
+        getFavoriteProducts(),
         onData: (favorites) => FavoriteLoaded(favorites),
         onError: (error, _) => FavoriteError(error.toString()),
       );

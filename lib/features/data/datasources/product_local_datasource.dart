@@ -29,10 +29,10 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   @override
   Future<void> cacheProducts(List<ProductModel> products) async {
     try {
-      final Map<String, dynamic> data = {
-        for (var p in products) p.id.toString(): p.toJson(),
-      };
-      await productBox.putAll(data);
+      for (var p in products) {
+        print('Saving to Hive: ${p.id} - ${p.title}');
+        await productBox.put(p.id.toString(), p.toJson());
+      }
     } catch (e) {
       throw CacheException('Gagal menyimpan cache: $e');
     }
@@ -93,8 +93,9 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   List<ProductModel> _getFavoritesFromBox() {
-    return favoriteBox.values
-        .map((e) => ProductModel.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
+    return favoriteBox.values.map((e) {
+      print('raw favorite data: $e');
+      return ProductModel.fromJson(Map<String, dynamic>.from(e));
+    }).toList();
   }
 }

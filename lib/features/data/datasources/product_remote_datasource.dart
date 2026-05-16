@@ -44,6 +44,7 @@ class ProductRemoteDatasourceImpl implements ProductRemoteDatasource {
         '/products',
         data: product.toJson(),
       );
+      print('Response POST: ${response.data}');
       return ProductModel.fromJson(response.data);
     } on DioException catch (e) {
       throw ServerException(e.message ?? 'Server error');
